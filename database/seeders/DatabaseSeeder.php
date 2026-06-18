@@ -16,6 +16,12 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Idempotent: if the core data is already seeded, do nothing. Lets the
+        // container safely run this on every boot (no Shell access on free tier).
+        if (AdminUser::query()->exists()) {
+            return;
+        }
+
         $city = City::create(['name' => 'Hyderabad', 'state' => 'TS', 'country' => 'IN', 'timezone' => 'Asia/Kolkata']);
 
         $hub = Hub::create([

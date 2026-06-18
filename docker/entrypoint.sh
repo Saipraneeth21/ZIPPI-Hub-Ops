@@ -14,5 +14,10 @@ php artisan storage:link || true
 # Apply the database schema. Safe to run on every boot (no-op once applied).
 php artisan migrate --force
 
+# Seed core + demo data. Both seeders are idempotent (guarded), so this is a
+# no-op after the first boot — needed because the free tier has no Shell access.
+php artisan db:seed --force || true
+php artisan db:seed --class=DemoDashboardSeeder --force || true
+
 # Serve on the port Render expects.
 exec php artisan serve --host 0.0.0.0 --port "${PORT:-10000}"
