@@ -14,7 +14,7 @@ services:
     plan: free
     region: singapore
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /admin/login
+    healthCheckPath: /up
     envVars:
       - key: APP_NAME
         value: "ZIPPI Rental Admin"

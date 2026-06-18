@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---------- Stage 1: build front-end assets with Vite ----------
-FROM node:20-slim AS assets
+FROM node:22-slim AS assets
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
