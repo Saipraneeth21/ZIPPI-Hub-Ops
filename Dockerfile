@@ -10,7 +10,8 @@ COPY vite.config.js ./
 RUN npm run build
 
 # ---------- Stage 2: PHP application runtime ----------
-FROM php:8.3-cli AS app
+# PHP 8.4 — the locked Symfony 7 components require php >=8.4.1.
+FROM php:8.4-cli AS app
 
 # System packages + PHP extensions (pdo_pgsql for Render's Postgres).
 RUN apt-get update && apt-get install -y --no-install-recommends git unzip \
