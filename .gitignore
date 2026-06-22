@@ -21,7 +21,7 @@
 /storage/*.key
 /storage/pail
 /vendor
-/database/*.sqlite
+# database.sqlite is tracked on purpose so the local dev DB syncs across machines.
 /database/*.sqlite-journal
 _ide_helper.php
 Homestead.json
