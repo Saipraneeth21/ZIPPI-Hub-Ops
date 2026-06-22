@@ -1,0 +1,54 @@
+name: CI
+
+# Run on every push to main and on every pull request targeting main.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # PHP 8.4 to match the Dockerfile (php:8.4-cli) and the locked deps (>=8.4.1).
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3, bcmath, intl
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      # Code style check (advisory). The existing codebase isn't Pint-formatted
+      # yet, so this is non-blocking — it reports drift without failing the build.
+      # Once you run `vendor/bin/pint` to format everything, drop continue-on-error
+      # to make style a hard gate.
+      - name: Lint (Pint)
+        run: vendor/bin/pint --test
+        continue-on-error: true
+
+      # Test suite runs against sqlite :memory: (configured in phpunit.xml),
+      # so no database service is required.
+      - name: Run tests
+        run: php artisan test
