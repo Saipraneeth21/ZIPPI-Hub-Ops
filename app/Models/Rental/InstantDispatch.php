@@ -27,7 +27,16 @@ class InstantDispatch extends Model
     /** Aadhaar shown as XXXX XXXX 1234. */
     public function getAadharMaskedAttribute(): ?string
     {
-        $digits = preg_replace('/\D/', '', (string) $this->aadhar_number);
+        // Guard against ciphertext encrypted with a different APP_KEY: the
+        // 'encrypted' cast throws DecryptException on access. Don't let one
+        // bad row 500 the whole list — show it as unreadable instead.
+        try {
+            $raw = (string) $this->aadhar_number;
+        } catch (\Throwable) {
+            return '••• unreadable';
+        }
+
+        $digits = preg_replace('/\D/', '', $raw);
         if (strlen($digits) < 4) {
             return $digits ? str_repeat('X', strlen($digits)) : null;
         }
