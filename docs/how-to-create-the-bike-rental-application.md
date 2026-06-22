@@ -346,7 +346,8 @@ php artisan serve     # http://127.0.0.1:8000
    encryption of sensitive columns).
 4. **Payments** — point Razorpay webhooks at your endpoint; remember confirmation is
    webhook-authoritative and idempotent.
-5. **Deploy** — a `Dockerfile` and `render.yaml` are included; `npm run build` for admin assets.
+5. **Deploy** — provision a PHP 8.4+ host, run migrations + seeders, and `npm run build` for
+   admin assets. (No platform is wired in: choose your own host/container setup.)
 
 ---
 
