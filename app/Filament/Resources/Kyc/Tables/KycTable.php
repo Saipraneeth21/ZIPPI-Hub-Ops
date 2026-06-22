@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Kyc\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use App\Enums\KycStatus;
 use App\Filament\Resources\Kyc\Support\KycReviewActions;
 use Filament\Actions\ViewAction;
@@ -40,6 +41,7 @@ class KycTable
                     ->sortable(),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 SelectFilter::make('kyc_status')
                     ->label('Status')
                     ->options(collect([

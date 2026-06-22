@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Payments\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use App\Enums\PaymentStatus;
 use App\Filament\Resources\Payments\Support\InitiateRefundAction;
 use Filament\Actions\ViewAction;
@@ -47,6 +48,7 @@ class PaymentsTable
                 TextColumn::make('paid_at')->label('Paid')->dateTime('d M Y, h:i A')->placeholder('—')->timezone('Asia/Kolkata')->sortable(),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 SelectFilter::make('status')
                     ->options(collect(PaymentStatus::cases())->mapWithKeys(fn ($c) => [
                         $c->value => ucfirst($c->value),

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\GeofenceAlerts\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use App\Models\Rental\GeofenceAlert;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -35,6 +36,7 @@ class GeofenceAlertsTable
                 IconColumn::make('resolved')->boolean()->sortable(),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 SelectFilter::make('severity')
                     ->options(['high' => 'High', 'medium' => 'Medium', 'low' => 'Low']),
                 TernaryFilter::make('resolved')

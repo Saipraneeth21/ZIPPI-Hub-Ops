@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Reviews\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use App\Filament\Resources\Reviews\Support\ModerateReviewAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -29,6 +30,7 @@ class ReviewsTable
                 TextColumn::make('created_at')->label('When')->dateTime('d M Y')->timezone('Asia/Kolkata')->sortable(),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 SelectFilter::make('rating')
                     ->options([5 => '5 ★', 4 => '4 ★', 3 => '3 ★', 2 => '2 ★', 1 => '1 ★']),
                 SelectFilter::make('status')

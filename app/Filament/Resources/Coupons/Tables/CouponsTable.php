@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Coupons\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -33,6 +34,7 @@ class CouponsTable
                 IconColumn::make('is_active')->label('Active')->boolean()->sortable(),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 TernaryFilter::make('is_active')->label('Active'),
             ])
             ->recordActions([

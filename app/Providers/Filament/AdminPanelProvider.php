@@ -27,7 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->brandName('ZIPPI Rental Admin')
+            ->brandName('ZIPPI Rental')
             ->authGuard('admin')
             ->login()
             ->colors([

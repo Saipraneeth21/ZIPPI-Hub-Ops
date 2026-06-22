@@ -7,10 +7,12 @@ use App\Filament\Resources\Bookings\Support\BookingActions;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 
 class BookingsTable
 {
@@ -46,14 +48,28 @@ class BookingsTable
                         $c->value => ucfirst($c->value),
                     ])->all()),
                 Filter::make('created_at')
+                    ->columnSpan(2)
+                    ->columns(2)
                     ->schema([
-                        DatePicker::make('from')->label('Booked from'),
-                        DatePicker::make('until')->label('Booked until'),
+                        DatePicker::make('from')->label('From'),
+                        DatePicker::make('until')->label('To'),
                     ])
                     ->query(fn (Builder $query, array $data) => $query
                         ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
-                        ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))),
+                        ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('created_at', '<=', $d)))
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['from'] ?? null) {
+                            $indicators[] = 'From ' . Carbon::parse($data['from'])->format('d M Y');
+                        }
+                        if ($data['until'] ?? null) {
+                            $indicators[] = 'To ' . Carbon::parse($data['until'])->format('d M Y');
+                        }
+
+                        return $indicators;
+                    }),
             ])
+            ->filtersLayout(FiltersLayout::AboveContent)
             ->recordActions([
                 ViewAction::make(),
                 ...BookingActions::all(),

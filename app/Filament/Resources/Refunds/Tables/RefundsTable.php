@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Refunds\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
@@ -41,6 +42,7 @@ class RefundsTable
                 TextColumn::make('processed_at')->label('Processed')->dateTime('d M Y, h:i A')->placeholder('—')->timezone('Asia/Kolkata')->sortable(),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 SelectFilter::make('status')
                     ->options(['pending' => 'Pending', 'processed' => 'Processed', 'failed' => 'Failed']),
                 SelectFilter::make('type')

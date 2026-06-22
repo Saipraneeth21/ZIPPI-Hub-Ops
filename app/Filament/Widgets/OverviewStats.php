@@ -24,6 +24,9 @@ use Illuminate\Support\Carbon;
  * Dashboard KPI cards — Admin-Dashboard/01-Admin-Modules.md §3.1.
  * Revenue / completed / active rentals, fleet utilization, KYC approval rate,
  * new users. Polls every 30s so the operational counters stay live.
+ *
+ * Date-range filtering for completed rentals lives in the Orders list
+ * (Bookings → Completed tab), not on these cards.
  */
 class OverviewStats extends StatsOverviewWidget
 {
@@ -70,7 +73,7 @@ class OverviewStats extends StatsOverviewWidget
             Stat::make('Revenue (30d)', '₹' . number_format($revenuePaise / 100, 2))
                 ->description('Captured payments')
                 ->descriptionIcon('heroicon-m-banknotes')
-                ->color('success')
+                ->color('primary')
                 ->chart($this->revenueSparkline($since))
                 ->url($this->link('payments.view', fn () => PaymentResource::getUrl())),
 
@@ -83,13 +86,13 @@ class OverviewStats extends StatsOverviewWidget
             Stat::make('Completed (30d)', (string) $completedRentals)
                 ->description('Finished rentals')
                 ->descriptionIcon('heroicon-m-check-circle')
-                ->color('success')
+                ->color('primary')
                 ->url($this->link('orders.view', fn () => BookingResource::getUrl('index', ['activeTab' => 'completed']))),
 
             Stat::make('Fleet Utilization', $utilization . '%')
                 ->description($bookedBikes . ' of ' . $serviceableBikes . ' bikes booked')
                 ->descriptionIcon('heroicon-m-chart-bar')
-                ->color($utilization >= 70 ? 'success' : 'gray')
+                ->color($utilization >= 70 ? 'primary' : 'gray')
                 ->url($this->link('bikes.manage', fn () => BikeResource::getUrl())),
 
             Stat::make('KYC Approval Rate', $approvalRate . '%')
@@ -101,7 +104,7 @@ class OverviewStats extends StatsOverviewWidget
             Stat::make('New Users (30d)', (string) $newUsers)
                 ->description('Registrations')
                 ->descriptionIcon('heroicon-m-user-plus')
-                ->color('info')
+                ->color('primary')
                 ->url($this->link('users.view', fn () => UserResource::getUrl())),
         ];
     }

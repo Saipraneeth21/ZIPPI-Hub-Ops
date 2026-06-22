@@ -9,6 +9,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class CustomerDocumentForm
@@ -35,15 +36,21 @@ class CustomerDocumentForm
                         ->getOptionLabelFromRecordUsing(fn (User $record) => "{$record->name} ({$record->email})")
                         ->searchable(['name', 'email'])
                         ->preload()
-                        ->required(),
+                        ->required()
+                        // Preselected when arriving from "New user" → create document.
+                        ->default(fn () => request()->query('user_id')),
 
                     Select::make('document_type')
                         ->label('Document type')
                         ->options(self::TYPES)
-                        ->required(),
+                        ->required()
+                        ->live(),
 
                     TextInput::make('document_number_masked')
-                        ->label('Document number')
+                        // Label reflects the chosen document type, e.g. "Aadhaar number".
+                        ->label(fn (Get $get): string => isset(self::TYPES[$get('document_type')])
+                            ? self::TYPES[$get('document_type')] . ' number'
+                            : 'Document number')
                         ->maxLength(60)
                         ->helperText('Store a masked value — never the full number.'),
 

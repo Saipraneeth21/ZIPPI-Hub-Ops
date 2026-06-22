@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use App\Enums\KycStatus;
 use App\Filament\Resources\Users\Support\BlockToggleAction;
 use Filament\Actions\ViewAction;
@@ -64,6 +65,7 @@ class UsersTable
                     ->timezone('Asia/Kolkata'),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 SelectFilter::make('kyc_status')
                     ->label('KYC status')
                     ->options(collect(KycStatus::cases())->mapWithKeys(fn ($c) => [

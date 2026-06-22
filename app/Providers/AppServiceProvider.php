@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Enums\AdminRole;
 use App\Models\Rental\AdminLoginActivity;
 use App\Models\Rental\AdminUser;
 use App\Support\Rental\AdminAccess;
@@ -76,7 +75,9 @@ class AppServiceProvider extends ServiceProvider
     private function registerAdminGates(): void
     {
         Gate::before(function ($user, string $ability) {
-            if ($user instanceof AdminUser && $user->role === AdminRole::SuperAdmin) {
+            // Full-access roles (super_admin, admin, developer, manager) bypass
+            // the matrix and are granted every ability.
+            if ($user instanceof AdminUser && AdminAccess::hasFullAccess($user)) {
                 return true;
             }
 

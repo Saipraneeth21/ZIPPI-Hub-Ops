@@ -65,4 +65,31 @@ enum AdminRole: string
     case Ops = 'ops';
     case KycReviewer = 'kyc_reviewer';
     case Support = 'support';
+
+    // Full-access roles (see AdminAccess::FULL_ACCESS_ROLES).
+    case Admin = 'admin';
+    case Developer = 'developer';
+    case Manager = 'manager';
+
+    // Limited roles: dashboard view, users view, instant-dispatch accept only.
+    case Supervisor = 'supervisor';
+    case Telecaller = 'telecaller';
+    case Marketer = 'marketer';
+
+    /** Human-friendly label for UI (forms, tables). */
+    public function label(): string
+    {
+        return match ($this) {
+            self::SuperAdmin => 'Super Admin',
+            self::Ops => 'Ops',
+            self::KycReviewer => 'KYC Reviewer',
+            self::Support => 'Support',
+            self::Admin => 'Admin',
+            self::Developer => 'Developer',
+            self::Manager => 'Manager',
+            self::Supervisor => 'Supervisor',
+            self::Telecaller => 'Telecaller',
+            self::Marketer => 'Marketer',
+        };
+    }
 }

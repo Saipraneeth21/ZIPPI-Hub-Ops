@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Bikes\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use App\Enums\BikeStatus;
 use App\Models\Rental\Bike;
 use Filament\Actions\Action;
@@ -52,6 +53,7 @@ class BikesTable
                 TextColumn::make('bookings_count')->label('Bookings')->counts('bookings')->badge(),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 SelectFilter::make('status')
                     ->options(collect(BikeStatus::cases())->mapWithKeys(fn ($c) => [
                         $c->value => ucfirst($c->value),

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\BikeCategories\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -28,6 +29,7 @@ class BikeCategoriesTable
                 TextColumn::make('sort_order')->label('Order')->sortable(),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 TernaryFilter::make('is_active')->label('Active'),
             ])
             ->recordActions([

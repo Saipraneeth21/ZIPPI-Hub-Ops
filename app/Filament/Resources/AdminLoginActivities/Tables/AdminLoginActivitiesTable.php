@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AdminLoginActivities\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -27,6 +28,7 @@ class AdminLoginActivitiesTable
                 TextColumn::make('user_agent')->label('Device')->limit(40)->toggleable()->placeholder('—'),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 SelectFilter::make('event')
                     ->options(['login' => 'Login', 'logout' => 'Logout', 'failed' => 'Failed']),
             ])

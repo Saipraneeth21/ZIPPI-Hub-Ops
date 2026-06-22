@@ -7,6 +7,7 @@ use App\Filament\Resources\Users\Pages\ViewUser;
 use App\Filament\Resources\Users\RelationManagers\BookingsRelationManager;
 use App\Filament\Resources\Users\RelationManagers\PaymentsRelationManager;
 use App\Filament\Resources\Users\RelationManagers\WalletTransactionsRelationManager;
+use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Schemas\UserInfolist;
 use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\User;
@@ -29,6 +30,11 @@ class UserResource extends Resource
     protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    public static function form(Schema $schema): Schema
+    {
+        return UserForm::configure($schema);
+    }
 
     public static function infolist(Schema $schema): Schema
     {
@@ -75,10 +81,10 @@ class UserResource extends Resource
         return auth()->user()?->can('users.view') ?? false;
     }
 
-    // Riders self-register from the mobile app — never created/deleted from admin.
+    // Admins with users.manage can create riders; riders also self-register from the app.
     public static function canCreate(): bool
     {
-        return false;
+        return auth()->user()?->can('users.manage') ?? false;
     }
 
     public static function canEdit($record): bool

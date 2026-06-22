@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Hubs\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -25,6 +26,7 @@ class HubsTable
                 IconColumn::make('is_active')->label('Active')->boolean()->sortable(),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 TernaryFilter::make('is_active')->label('Active'),
             ])
             ->recordActions([

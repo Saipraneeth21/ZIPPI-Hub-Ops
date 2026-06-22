@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\InstantDispatches\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use App\Enums\DurationType;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -37,6 +38,7 @@ class InstantDispatchesTable
                 TextColumn::make('created_at')->label('Logged')->dateTime('d M Y, h:i A')->timezone('Asia/Kolkata')->sortable(),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 SelectFilter::make('status')
                     ->options(['pending' => 'Pending', 'dispatched' => 'Dispatched', 'cancelled' => 'Cancelled']),
                 SelectFilter::make('rental_type')

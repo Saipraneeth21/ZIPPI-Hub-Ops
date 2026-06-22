@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CustomerDocuments\Tables;
 
+use App\Filament\Support\Filters\DateRangeFilter;
 use App\Enums\KycStatus;
 use App\Filament\Resources\CustomerDocuments\Schemas\CustomerDocumentForm;
 use App\Http\Controllers\Admin\KycDocumentController;
@@ -55,6 +56,7 @@ class CustomerDocumentsTable
                 TextColumn::make('created_at')->label('Submitted')->dateTime('d M Y')->timezone('Asia/Kolkata')->sortable()->toggleable(),
             ])
             ->filters([
+                DateRangeFilter::make(),
                 SelectFilter::make('status')
                     ->label('Verification status')
                     ->options(collect(KycStatus::cases())->mapWithKeys(fn ($c) => [

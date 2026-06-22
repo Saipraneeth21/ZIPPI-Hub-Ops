@@ -6,6 +6,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -47,8 +48,22 @@ class AccountSettings extends Page implements HasActions, HasSchemas
 
     public function form(Schema $schema): Schema
     {
+        $admin = auth()->user();
+
         return $schema
             ->components([
+                Section::make('Profile')
+                    ->description('You are signed in as:')
+                    ->columns(2)
+                    ->schema([
+                        Placeholder::make('account_name')
+                            ->label('Name')
+                            ->content($admin?->name ?? '—'),
+                        Placeholder::make('account_role')
+                            ->label('Role')
+                            ->content($admin?->role?->label() ?? '—'),
+                    ]),
+
                 Section::make('Change password')
                     ->description('Choose a strong password you do not use elsewhere.')
                     ->columns(2)

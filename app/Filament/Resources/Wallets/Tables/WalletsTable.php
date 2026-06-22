@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Wallets\Tables;
 
 use App\Filament\Resources\Wallets\Support\WalletAdjustAction;
+use App\Filament\Support\Filters\DateRangeFilter;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -24,6 +25,9 @@ class WalletsTable
                 TextColumn::make('currency')->badge()->color('gray'),
                 TextColumn::make('transactions_count')->label('Entries')->counts('transactions')->badge(),
                 TextColumn::make('updated_at')->label('Updated')->since()->timezone('Asia/Kolkata')->sortable(),
+            ])
+            ->filters([
+                DateRangeFilter::make(),
             ])
             ->recordActions([
                 ViewAction::make(),
