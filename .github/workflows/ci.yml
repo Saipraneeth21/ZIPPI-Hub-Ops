@@ -52,3 +52,17 @@ jobs:
       # so no database service is required.
       - name: Run tests
         run: php artisan test
+
+  # Triggers a Render deploy ONLY after `test` passes, and only on a push to
+  # main (never on pull requests). Render auto-deploy must be turned OFF so this
+  # is the single deploy path. Set the RENDER_DEPLOY_HOOK_URL repo secret first.
+  deploy:
+    name: Deploy to Render
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        run: curl -fsSL -X POST "$RENDER_DEPLOY_HOOK_URL"
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
