@@ -1,1 +1,3 @@
 *.sqlite*
+# Tracked on purpose so the dev database syncs across machines.
+!database.sqlite
