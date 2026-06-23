@@ -16,6 +16,7 @@ class MaintenanceRecord extends Model
         'next_service_due' => 'date',
         'cost' => 'integer',
         'odometer_reading' => 'integer',
+        'attachments' => 'array',
     ];
 
     public function bike(): BelongsTo

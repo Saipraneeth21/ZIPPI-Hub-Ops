@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Bikes\Pages;
 
 use App\Filament\Resources\Bikes\BikeResource;
+use App\Filament\Resources\Bikes\Support\ImportBikesAction;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
@@ -13,6 +14,8 @@ class ListBikes extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            ImportBikesAction::template(),
+            ImportBikesAction::make(),
             CreateAction::make(),
         ];
     }

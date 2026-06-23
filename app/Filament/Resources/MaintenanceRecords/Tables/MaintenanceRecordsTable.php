@@ -23,6 +23,11 @@ class MaintenanceRecordsTable
                 TextColumn::make('cost')->label('Cost')->money('INR', divideBy: 100)->sortable(),
                 TextColumn::make('odometer_reading')->label('Odometer reading')->numeric()->sortable(),
                 TextColumn::make('next_service_due')->label('Next service due')->date('M j, Y')->sortable(),
+                TextColumn::make('attachments')
+                    ->label('Attachments')
+                    ->badge()
+                    ->state(fn ($record) => is_array($record->attachments) ? count($record->attachments) : 0)
+                    ->color('gray'),
             ])
             ->filters([
                 DateRangeFilter::make(),

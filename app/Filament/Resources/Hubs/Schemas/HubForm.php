@@ -23,8 +23,10 @@ class HubForm
                         ->relationship('city', 'name')
                         ->searchable()->preload()->required(),
                     TextInput::make('address')->required()->maxLength(255)->columnSpanFull(),
-                    TextInput::make('latitude')->numeric()->required()->minValue(-90)->maxValue(90),
-                    TextInput::make('longitude')->numeric()->required()->minValue(-180)->maxValue(180),
+                    TextInput::make('latitude')->numeric()->minValue(-90)->maxValue(90)
+                        ->helperText('Optional — used to plot the hub on the map.'),
+                    TextInput::make('longitude')->numeric()->minValue(-180)->maxValue(180)
+                        ->helperText('Optional — used to plot the hub on the map.'),
                     TimePicker::make('opening_time')->seconds(false)->default('06:00'),
                     TimePicker::make('closing_time')->seconds(false)->default('22:00'),
                     Toggle::make('is_active')->default(true)->inline(false),

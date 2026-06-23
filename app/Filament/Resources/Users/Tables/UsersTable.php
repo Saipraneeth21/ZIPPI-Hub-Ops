@@ -92,6 +92,14 @@ class UsersTable
                         false: fn ($query) => $query->whereDoesntHave('profile', fn ($q) => $q->where('is_blocked', true)),
                         blank: fn ($query) => $query,
                     ),
+
+                TernaryFilter::make('red_flagged')
+                    ->label('Red flagged')
+                    ->queries(
+                        true: fn ($query) => $query->whereHas('profile', fn ($q) => $q->where('is_red_flagged', true)),
+                        false: fn ($query) => $query->whereDoesntHave('profile', fn ($q) => $q->where('is_red_flagged', true)),
+                        blank: fn ($query) => $query,
+                    ),
             ])
             ->recordActions([
                 ViewAction::make(),

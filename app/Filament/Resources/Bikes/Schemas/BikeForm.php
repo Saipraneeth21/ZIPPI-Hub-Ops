@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Bikes\Schemas;
 
-use App\Enums\BikeStatus;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
@@ -53,8 +52,8 @@ class BikeForm
                         ->required(),
                 ]),
 
-            Section::make('Placement & Status')
-                ->columns(3)
+            Section::make('Placement')
+                ->columns(2)
                 ->schema([
                     Select::make('hub_id')
                         ->label('Home hub')
@@ -67,12 +66,6 @@ class BikeForm
                         ->relationship('city', 'name')
                         ->searchable()
                         ->preload()
-                        ->required(),
-                    Select::make('status')
-                        ->options(collect(BikeStatus::cases())->mapWithKeys(fn ($c) => [
-                            $c->value => ucfirst($c->value),
-                        ])->all())
-                        ->default(BikeStatus::Available->value)
                         ->required(),
                 ]),
 

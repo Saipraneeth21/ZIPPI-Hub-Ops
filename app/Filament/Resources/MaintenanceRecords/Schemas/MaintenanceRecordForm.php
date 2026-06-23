@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\MaintenanceRecords\Schemas;
 
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -68,6 +70,26 @@ class MaintenanceRecordForm
                     DatePicker::make('next_service_due')
                         ->label('Next service due')
                         ->after('maintenance_date'),
+
+                    Textarea::make('job_sheet')
+                        ->label('Job sheet')
+                        ->required()
+                        ->rows(4)
+                        ->maxLength(5000)
+                        ->placeholder('Work performed, parts replaced, labour notes…')
+                        ->columnSpanFull(),
+
+                    FileUpload::make('attachments')
+                        ->label('Attachments')
+                        ->required()
+                        ->multiple()
+                        ->reorderable()
+                        ->openable()
+                        ->downloadable()
+                        ->disk(config('filesystems.default'))
+                        ->directory('maintenance')
+                        ->helperText('Upload the signed job sheet, receipts, or photos.')
+                        ->columnSpanFull(),
                 ]),
         ]);
     }

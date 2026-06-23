@@ -19,14 +19,12 @@ use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\HtmlString;
 
 /**
  * Dashboard KPI cards — Admin-Dashboard/01-Admin-Modules.md §3.1.
  * Revenue / completed / active rentals, fleet utilization, KYC approval rate,
  * new users. Polls every 30s so the operational counters stay live.
- *
- * Date-range filtering for completed rentals lives in the Orders list
- * (Bookings → Completed tab), not on these cards.
  */
 class OverviewStats extends StatsOverviewWidget
 {
@@ -35,6 +33,14 @@ class OverviewStats extends StatsOverviewWidget
     protected ?string $pollingInterval = '30s';
 
     protected ?string $heading = 'Operational Overview';
+
+    /** Selected period for the Completed card: '30d' or a 'Y-m' month key. */
+    public string $completedPeriod = '30d';
+
+    public function selectCompletedPeriod(string $period): void
+    {
+        $this->completedPeriod = $period;
+    }
 
     protected function getStats(): array
     {
@@ -46,13 +52,43 @@ class OverviewStats extends StatsOverviewWidget
             ->sum('amount');
 
         $activeRentals = Booking::where('status', BookingStatus::Active->value)->count();
-        $completedRentals = Booking::where('status', BookingStatus::Completed->value)
-            ->where('created_at', '>=', $since)
-            ->count();
-        // Last 90 days (3 months) — shown as a small secondary figure on the card.
-        $completedRentals90 = Booking::where('status', BookingStatus::Completed->value)
-            ->where('created_at', '>=', Carbon::now()->subDays(90))
-            ->count();
+
+        // Completed: a clickable period selector (last 30 days + last 3 months).
+        // Clicking a line sets $completedPeriod, which updates the figure below.
+        $periods = [[
+            'key' => '30d',
+            'label' => 'Last 30 days',
+            'short' => '30d',
+            'count' => Booking::where('status', BookingStatus::Completed->value)
+                ->where('created_at', '>=', $since)
+                ->count(),
+        ]];
+        for ($i = 2; $i >= 0; $i--) {
+            $start = Carbon::now()->startOfMonth()->subMonths($i);
+            $end = (clone $start)->endOfMonth();
+            $periods[] = [
+                'key' => $start->format('Y-m'),
+                'label' => $start->format('F'),
+                'short' => $start->format('M'),
+                'count' => Booking::where('status', BookingStatus::Completed->value)
+                    ->whereBetween('created_at', [$start, $end])
+                    ->count(),
+            ];
+        }
+
+        $selected = collect($periods)->firstWhere('key', $this->completedPeriod) ?? $periods[0];
+        $completedRentals = $selected['count'];
+        $completedTitle = 'Completed (' . $selected['short'] . ')';
+
+        $lines = ['Finished rentals'];
+        foreach ($periods as $period) {
+            $isActive = $period['key'] === $this->completedPeriod;
+            $style = 'cursor:pointer;' . ($isActive ? 'font-weight:700;text-decoration:underline;' : '');
+            // .prevent.stop: change the figure only; do NOT follow the card's link.
+            $lines[] = '<span wire:click.prevent.stop="selectCompletedPeriod(\'' . $period['key'] . '\')" style="' . $style . '">'
+                . e($period['label']) . ' · ' . $period['count'] . '</span>';
+        }
+        $completedDescription = new HtmlString(implode('<br>', $lines));
 
         // Fleet utilization: bikes currently booked / fleet excluding inactive.
         $bookedBikes = Bike::where('status', BikeStatus::Booked->value)->count();
@@ -87,9 +123,11 @@ class OverviewStats extends StatsOverviewWidget
                 ->color('warning')
                 ->url($this->link('orders.view', fn () => BookingResource::getUrl('index', ['activeTab' => 'active']))),
 
-            Stat::make('Completed (30d)', (string) $completedRentals)
-                ->description('Finished rentals · Last 90 days (3 months): ' . $completedRentals90)
-                ->descriptionIcon('heroicon-m-check-circle')
+            Stat::make($completedTitle, (string) $completedRentals)
+                // No descriptionIcon (it misaligns against the multi-line list).
+                // Clicking the card opens Bookings; the month lines use
+                // wire:click.prevent.stop so they only change the figure.
+                ->description($completedDescription)
                 ->color('primary')
                 ->url($this->link('orders.view', fn () => BookingResource::getUrl('index', ['activeTab' => 'completed']))),
 

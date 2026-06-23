@@ -22,7 +22,7 @@ class BikeCategoryResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
 
 
-    protected static ?string $navigationLabel = 'Bike Models';
+    protected static ?string $navigationLabel = 'Bike Categories';
 
     protected static string|UnitEnum|null $navigationGroup = 'Fleet';
 
