@@ -8,15 +8,15 @@ A **bike/scooter rental platform** (India-focused, INR currency) built as a Lara
 1. A **mobile-facing REST API** for riders (the mobile app itself is documented but lives in a separate repo).
 2. A **Filament admin dashboard** for staff/ops to manage the fleet, KYC, bookings, money, and incidents.
 
-The repo is a *production-structured MVP*: real architecture, real business rules, swappable third-party integrations, ~23 passing tests, CI, and detailed build docs — but seeded with demo data and using dev "log" fakes for SMS/push/KYC by default.
+The repo is a *production-structured MVP*: real architecture, real business rules, swappable third-party integrations, **95 passing tests**, CI, and detailed build docs — but seeded with demo data and using dev "log" fakes for SMS/push/KYC by default.
 
 ## Tech stack
-- **Laravel 13**, **PHP 8.3+**
+- **Laravel 13**, **PHP 8.4+** (the committed `composer.lock` resolves to packages requiring ≥ 8.4.1)
 - **Filament 4** (admin panel at `/admin`)
 - **Laravel Sanctum** (API token auth)
 - **SQLite** locally (zero-config) → **MariaDB** in production
 - **Vite + Tailwind** for minimal admin assets (no React/Vue SPA)
-- **GitHub Actions CI** (Pint lint + PHPUnit on SQLite in-memory); Render deploy was recently retired
+- **GitHub Actions CI** (Pint lint, non-blocking + PHPUnit on SQLite in-memory); no hosting wired in (Render was retired)
 
 ## Core architecture (layers)
 ```
@@ -80,7 +80,7 @@ Quote = base rate (hourly/daily/weekly/monthly) + **18% GST** + **₹20 platform
 **Fleet**
 - `City → Hub → Bike` hierarchy
 - `Bike` (soft-deletes, status enum, IoT device id) → `BikeImage[]`, `BikePricing` (versioned), `BikeCategory`
-- `MaintenanceRecord[]`, `IncidentReport[]` *(new — accident/damage/theft with severity + estimated cost)*
+- `MaintenanceRecord[]` (type, cost, odometer, next-service, **job sheet + attachments**), `IncidentReport[]` *(accident/damage/theft with severity + estimated cost)*
 - Telemetry: `BikeTelemetry`, `LockCommand`, `GeofenceAlert`
 
 **Bookings & money**
@@ -102,14 +102,16 @@ Quote = base rate (hourly/daily/weekly/monthly) + **18% GST** + **₹20 platform
 Organized into nav groups: **Operations, Fleet, Customers, Finance, Marketing, System, Account**. Brand turquoise (#40E0D0).
 
 - **Operations:** Bookings (view-only list + lifecycle actions: cancel, force-return, apply-deductions), **LiveMap** (Leaflet, polls fleet positions, geofence alerts)
-- **Fleet:** Bikes (+ pricing/images relation managers, soft-delete guarded by active bookings), Categories, Pricing, Hubs, **Incident Reports** *(new)*, Maintenance, Cities
-- **Customers:** Users (view-only, self-registered riders), **KYC Queue** (approve/reject with per-doc flagging, nav badge), Customer Documents, **Red Flagged Users** *(new — soft warning distinct from hard block; raising a flag revokes all API tokens)*
-- **Finance:** Payments (initiate refund, ≥₹5000 needs super-admin), Refunds, Wallets (super-admin balance adjust, audited)
+- **Fleet:** Bikes (+ pricing/images relation managers; **CSV bulk import + template**; mandatory primary photo on create; Status field removed from the form — defaults to `available`; Delete is shown-but-disabled with a tooltip when a bike has active/confirmed bookings), Bike Categories, Rental Plans (pricing), Hubs (lat/long optional), **Incident Reports** *(new)*, Maintenance Records (**Job sheet + Attachments, both mandatory**), **Cities** *(new management resource)*
+- **Customers:** Users (view-only riders; Block + **Red flag** row actions; filters for KYC status / Blocked / **Red flagged**), **KYC Queue** (approve/reject with per-doc flagging, nav badge), Customer Documents (red-flag action), **Red Flagged Users** *(soft warning distinct from hard block; raising a flag revokes all API tokens and denies app login; name links to the rider profile)*
+- **Finance:** Payments (initiate refund, ≥₹5000 needs super-admin), Refunds, Wallets (**Total wallet balance header tile**; super-admin balance adjust, audited)
 - **Marketing:** Coupons; **PushCampaign** page
-- **System:** Admin Login Activities, Geofence Alerts, Instant Dispatches, Reviews (moderate)
-- **Account:** Staff (AdminUser RBAC), **Hub Staff Login** *(new)*, MyProfile, Account Settings, Configuration
+- **System:** Admin Login Activities, Configuration
+- **Account:** Staff (AdminUser RBAC), **Hub Staff Login** *(new)*, **Red Flag** list, MyProfile, Account Settings *(password change is **Super-Admin-only**; other admins see a contact-your-admin note)*
 
-**Dashboard widgets:** OverviewStats (revenue + sparkline, active rentals, fleet utilization, KYC approval rate, new users), ActiveRidesTable (overdue highlighting), BookingsByStatusStats, RevenueTrendChart (14-day line).
+All resource "Create" pages show only **Create + Cancel** (no "Create & create another").
+
+**Dashboard widgets:** OverviewStats (revenue + sparkline, active rentals, **Completed card with clickable per-month figures (30d / last 3 months) that links to Bookings**, fleet utilization, KYC approval rate, new users), ActiveRidesTable (overdue highlighting), BookingsByStatusStats, RevenueTrendChart (14-day line).
 
 **RBAC:** gate-based abilities (`bikes.manage`, `orders.manage`, `kyc.review`, `payments.view`, `wallet.adjust`, `users.block`, `audit.view`, `tracking.view`, etc.) mapped to 10 admin roles. Sensitive actions are audit-logged with actor + before/after + IP.
 
@@ -131,11 +133,17 @@ Swapping providers requires no service-layer changes — just rebind in `RentalS
 
 ---
 
-## Recently added (in-flight work)
-Three new feature clusters:
-1. **Incident Reports** — bike accident/damage/theft tracking (model, migration, Filament resource).
-2. **Hub Staff** — on-site staff login accounts per hub.
-3. **Red-flag system** — soft warning on riders for repeated KYC/document issues, separate from hard blocking; toggling a flag revokes the rider's API tokens. Plus dashboard widget tweaks.
+## Recently added
+- **Incident Reports** — bike accident/damage/theft tracking (severity, status, estimated cost, photo).
+- **Hub Staff Login** — on-site staff accounts per hub (managed under Account).
+- **Cities** — management resource for service locations (hubs/bikes reference them by name).
+- **Red-flag system** — soft warning on riders for repeated KYC/document issues, separate from hard blocking. Flag from the Users list or Customer Documents; raising a flag revokes the rider's API tokens and denies app login. An Account → Red Flag list shows flagged riders (name links to profile); Users has a "Red flagged" filter.
+- **Bike CSV import** — bulk-create bikes from CSV (category/hub/city matched by name) with a downloadable template; per-row validation skips bad rows.
+- **Maintenance job sheets** — mandatory Job sheet text + multi-file Attachments on maintenance records.
+- **Wallets total tile** — combined balance across all rider wallets at the top of the list.
+- **Dashboard Completed card** — clickable per-month figures (30d / last 3 months) that update in place; the card links to Bookings.
+- **Password policy** — only Super Admins set/change passwords; other admins can't self-serve a change.
+- **Hardening / fixes** — Hub `city` relationship (fixed create crash) + optional lat/long; Aadhaar masked-accessor guarded against key-mismatch decryption; de-duplicated cities and bike categories; nav reorganized into groups and "Bike Models" → "Bike Categories".
 
 ---
 
