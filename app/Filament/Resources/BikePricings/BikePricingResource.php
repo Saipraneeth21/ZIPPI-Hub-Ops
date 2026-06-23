@@ -14,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class BikePricingResource extends Resource
 {
@@ -24,7 +25,9 @@ class BikePricingResource extends Resource
 
     protected static ?string $navigationLabel = 'Rental Plans';
 
-    protected static ?int $navigationSort = 17;
+    protected static string|UnitEnum|null $navigationGroup = 'Fleet';
+
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $modelLabel = 'plan';
 

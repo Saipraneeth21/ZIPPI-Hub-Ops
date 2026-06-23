@@ -17,7 +17,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  */
 class BookingsByStatusStats extends StatsOverviewWidget
 {
-    protected static ?int $sort = 5;
+    protected static ?int $sort = 3;
 
     protected ?string $pollingInterval = '30s';
 

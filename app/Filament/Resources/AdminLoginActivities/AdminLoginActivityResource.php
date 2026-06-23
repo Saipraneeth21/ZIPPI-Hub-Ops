@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class AdminLoginActivityResource extends Resource
 {
@@ -20,7 +21,9 @@ class AdminLoginActivityResource extends Resource
 
     protected static ?string $navigationLabel = 'Login Activities';
 
-    protected static ?int $navigationSort = 13;
+    protected static string|UnitEnum|null $navigationGroup = 'System';
+
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $modelLabel = 'login activity';
 

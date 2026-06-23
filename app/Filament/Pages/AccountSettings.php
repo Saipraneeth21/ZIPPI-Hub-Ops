@@ -37,7 +37,7 @@ class AccountSettings extends Page implements HasActions, HasSchemas
 
     protected static ?string $title = 'Account Settings';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 5;
 
     public ?array $data = [];
 

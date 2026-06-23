@@ -9,6 +9,7 @@ use App\Filament\Resources\CustomerDocuments\Pages\ViewCustomerDocument;
 use App\Filament\Resources\CustomerDocuments\Schemas\CustomerDocumentForm;
 use App\Filament\Resources\CustomerDocuments\Schemas\CustomerDocumentInfolist;
 use App\Filament\Resources\CustomerDocuments\Tables\CustomerDocumentsTable;
+use App\Enums\AdminRole;
 use App\Models\Rental\KycDocument;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -16,6 +17,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 /**
  * Customers Documents (Admin-Dashboard §3.3) — every KYC document a customer
@@ -30,7 +32,9 @@ class CustomerDocumentResource extends Resource
 
     protected static ?string $navigationLabel = 'Customer Documents';
 
-    protected static ?int $navigationSort = 7;
+    protected static string|UnitEnum|null $navigationGroup = 'Customers';
+
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $modelLabel = 'customer document';
 
@@ -70,12 +74,25 @@ class CustomerDocumentResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->can('kyc.review') ?? false;
+        return static::canReviewOrSupervise();
     }
 
     public static function canView($record): bool
     {
-        return auth()->user()?->can('kyc.review') ?? false;
+        return static::canReviewOrSupervise();
+    }
+
+    /**
+     * KYC reviewers (and full-access admins via the gate) can view documents;
+     * Supervisors are also allowed in so they can raise red flags on customers
+     * with repeated issues.
+     */
+    protected static function canReviewOrSupervise(): bool
+    {
+        $user = auth()->user();
+
+        return ($user?->can('kyc.review') ?? false)
+            || $user?->role === AdminRole::Supervisor;
     }
 
     public static function canCreate(): bool

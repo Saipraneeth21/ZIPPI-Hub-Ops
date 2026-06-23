@@ -21,7 +21,9 @@ class Configuration extends Page
 
     protected static ?string $navigationLabel = 'Configuration';
 
-    protected static ?int $navigationSort = 5;
+    protected static string|UnitEnum|null $navigationGroup = 'System';
+
+    protected static ?int $navigationSort = 2;
 
     public static function canAccess(): bool
     {

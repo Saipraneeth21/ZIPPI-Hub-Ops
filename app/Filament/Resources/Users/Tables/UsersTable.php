@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Users\Tables;
 use App\Filament\Support\Filters\DateRangeFilter;
 use App\Enums\KycStatus;
 use App\Filament\Resources\Users\Support\BlockToggleAction;
+use App\Filament\Resources\Users\Support\RedFlagToggleAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -52,6 +53,15 @@ class UsersTable
                     ->trueColor('danger')
                     ->falseColor('success'),
 
+                IconColumn::make('profile.is_red_flagged')
+                    ->label('Flagged')
+                    ->boolean()
+                    ->trueIcon('heroicon-s-flag')
+                    ->falseIcon('heroicon-o-flag')
+                    ->trueColor('danger')
+                    ->falseColor('gray')
+                    ->tooltip(fn ($record) => $record->profile?->red_flag_reason),
+
                 TextColumn::make('wallet.balance')
                     ->label('Wallet')
                     ->money('INR', divideBy: 100)
@@ -86,6 +96,7 @@ class UsersTable
             ->recordActions([
                 ViewAction::make(),
                 BlockToggleAction::make(),
+                RedFlagToggleAction::make(),
             ])
             ->defaultSort('created_at', 'desc');
     }

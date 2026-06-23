@@ -35,7 +35,7 @@ class MyProfile extends Page implements HasActions, HasSchemas
 
     protected static ?string $title = 'My Profile';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 4;
 
     public ?array $data = [];
 

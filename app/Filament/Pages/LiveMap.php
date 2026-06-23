@@ -23,7 +23,9 @@ class LiveMap extends Page
 
     protected static ?string $navigationLabel = 'Live Map';
 
-    protected static ?int $navigationSort = 12;
+    protected static string|UnitEnum|null $navigationGroup = 'Operations';
+
+    protected static ?int $navigationSort = 3;
 
     public static function canAccess(): bool
     {

@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class BikeCategoryResource extends Resource
 {
@@ -22,6 +23,8 @@ class BikeCategoryResource extends Resource
 
 
     protected static ?string $navigationLabel = 'Bike Models';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Fleet';
 
     protected static ?int $navigationSort = 2;
 

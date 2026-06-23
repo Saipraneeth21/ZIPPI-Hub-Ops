@@ -49,6 +49,10 @@ class OverviewStats extends StatsOverviewWidget
         $completedRentals = Booking::where('status', BookingStatus::Completed->value)
             ->where('created_at', '>=', $since)
             ->count();
+        // Last 90 days (3 months) — shown as a small secondary figure on the card.
+        $completedRentals90 = Booking::where('status', BookingStatus::Completed->value)
+            ->where('created_at', '>=', Carbon::now()->subDays(90))
+            ->count();
 
         // Fleet utilization: bikes currently booked / fleet excluding inactive.
         $bookedBikes = Bike::where('status', BikeStatus::Booked->value)->count();
@@ -84,7 +88,7 @@ class OverviewStats extends StatsOverviewWidget
                 ->url($this->link('orders.view', fn () => BookingResource::getUrl('index', ['activeTab' => 'active']))),
 
             Stat::make('Completed (30d)', (string) $completedRentals)
-                ->description('Finished rentals')
+                ->description('Finished rentals · Last 90 days (3 months): ' . $completedRentals90)
                 ->descriptionIcon('heroicon-m-check-circle')
                 ->color('primary')
                 ->url($this->link('orders.view', fn () => BookingResource::getUrl('index', ['activeTab' => 'completed']))),

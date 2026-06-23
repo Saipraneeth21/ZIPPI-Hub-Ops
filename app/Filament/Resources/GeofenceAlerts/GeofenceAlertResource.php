@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class GeofenceAlertResource extends Resource
 {
@@ -20,7 +21,9 @@ class GeofenceAlertResource extends Resource
 
     protected static ?string $navigationLabel = 'Geofence Alerts';
 
-    protected static ?int $navigationSort = 8;
+    protected static string|UnitEnum|null $navigationGroup = 'Fleet';
+
+    protected static ?int $navigationSort = 7;
 
     protected static ?string $recordTitleAttribute = 'id';
 

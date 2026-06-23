@@ -13,6 +13,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class ReviewResource extends Resource
 {
@@ -22,7 +23,9 @@ class ReviewResource extends Resource
 
     protected static ?string $navigationLabel = 'Reviews';
 
-    protected static ?int $navigationSort = 18;
+    protected static string|UnitEnum|null $navigationGroup = 'Marketing';
+
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $recordTitleAttribute = 'id';
 

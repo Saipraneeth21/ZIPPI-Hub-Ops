@@ -14,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class WalletResource extends Resource
 {
@@ -24,7 +25,9 @@ class WalletResource extends Resource
 
     protected static ?string $navigationLabel = 'Wallets';
 
-    protected static ?int $navigationSort = 19;
+    protected static string|UnitEnum|null $navigationGroup = 'Finance';
+
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $recordTitleAttribute = 'id';
 

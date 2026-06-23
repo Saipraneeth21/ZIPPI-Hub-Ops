@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class InstantDispatchResource extends Resource
 {
@@ -24,7 +25,9 @@ class InstantDispatchResource extends Resource
 
     protected static ?string $navigationLabel = 'Instant Dispatch';
 
-    protected static ?int $navigationSort = 10;
+    protected static string|UnitEnum|null $navigationGroup = 'Operations';
+
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $modelLabel = 'instant dispatch';
 

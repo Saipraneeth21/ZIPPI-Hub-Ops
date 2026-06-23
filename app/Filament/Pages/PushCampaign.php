@@ -39,7 +39,9 @@ class PushCampaign extends Page implements HasActions, HasSchemas
 
     protected static ?string $navigationLabel = 'Push Campaign';
 
-    protected static ?int $navigationSort = 15;
+    protected static string|UnitEnum|null $navigationGroup = 'Marketing';
+
+    protected static ?int $navigationSort = 3;
 
     public ?array $data = [];
 

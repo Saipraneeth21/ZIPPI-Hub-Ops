@@ -5,6 +5,7 @@ namespace App\Filament\Resources\CustomerDocuments\Tables;
 use App\Filament\Support\Filters\DateRangeFilter;
 use App\Enums\KycStatus;
 use App\Filament\Resources\CustomerDocuments\Schemas\CustomerDocumentForm;
+use App\Filament\Resources\CustomerDocuments\Support\RedFlagUserAction;
 use App\Http\Controllers\Admin\KycDocumentController;
 use App\Models\Rental\KycDocument;
 use Filament\Actions\Action;
@@ -12,8 +13,10 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class CustomerDocumentsTable
@@ -37,6 +40,14 @@ class CustomerDocumentsTable
             ->columns([
                 TextColumn::make('user.name')->label('User')->searchable()->sortable()->weight('medium')
                     ->description(fn (KycDocument $record) => $record->user?->email),
+                IconColumn::make('user.profile.is_red_flagged')
+                    ->label('Flagged')
+                    ->boolean()
+                    ->trueIcon('heroicon-s-flag')
+                    ->falseIcon('heroicon-o-flag')
+                    ->trueColor('danger')
+                    ->falseColor('gray')
+                    ->tooltip(fn (KycDocument $record) => $record->user?->profile?->red_flag_reason),
                 TextColumn::make('document_type')
                     ->label('Document type')
                     ->badge()
@@ -65,6 +76,13 @@ class CustomerDocumentsTable
                 SelectFilter::make('document_type')
                     ->label('Document type')
                     ->options(CustomerDocumentForm::TYPES),
+                TernaryFilter::make('is_red_flagged')
+                    ->label('Red flagged')
+                    ->queries(
+                        true: fn ($query) => $query->whereHas('user.profile', fn ($q) => $q->where('is_red_flagged', true)),
+                        false: fn ($query) => $query->whereDoesntHave('user.profile', fn ($q) => $q->where('is_red_flagged', true)),
+                        blank: fn ($query) => $query,
+                    ),
             ])
             ->recordActions([
                 Action::make('file')
@@ -76,6 +94,7 @@ class CustomerDocumentsTable
                     ->visible(fn (KycDocument $record) => filled($record->file_path)),
                 ViewAction::make(),
                 EditAction::make(),
+                RedFlagUserAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

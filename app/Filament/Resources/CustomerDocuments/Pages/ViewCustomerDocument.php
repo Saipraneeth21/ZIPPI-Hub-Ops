@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CustomerDocuments\Pages;
 
 use App\Filament\Resources\CustomerDocuments\CustomerDocumentResource;
+use App\Filament\Resources\CustomerDocuments\Support\RedFlagUserAction;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -14,6 +15,7 @@ class ViewCustomerDocument extends ViewRecord
     {
         return [
             EditAction::make(),
+            RedFlagUserAction::make(),
         ];
     }
 }

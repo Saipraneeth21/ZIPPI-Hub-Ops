@@ -86,4 +86,9 @@ class User extends Authenticatable
     {
         return (bool) ($this->profile?->is_blocked ?? false);
     }
+
+    public function isRedFlagged(): bool
+    {
+        return (bool) ($this->profile?->is_red_flagged ?? false);
+    }
 }

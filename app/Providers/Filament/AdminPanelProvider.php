@@ -45,8 +45,17 @@ class AdminPanelProvider extends PanelProvider
                 NavigationItem::make('Logout')
                     ->group('Account')
                     ->icon(Heroicon::OutlinedArrowRightOnRectangle)
-                    ->sort(3)
+                    ->sort(6)
                     ->url(fn () => route('admin.account.logout')),
+            ])
+            ->navigationGroups([
+                'Operations',
+                'Fleet',
+                'Customers',
+                'Finance',
+                'Marketing',
+                'System',
+                'Account',
             ])
             ->middleware([
                 EncryptCookies::class,

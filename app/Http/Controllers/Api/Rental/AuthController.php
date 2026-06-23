@@ -36,6 +36,9 @@ class AuthController extends Controller
         if ($user->isBlocked()) {
             return $this->fail('Account is blocked.', null, 403);
         }
+        if ($user->isRedFlagged()) {
+            return $this->fail('Account is flagged. Please contact support.', null, 403);
+        }
         return $this->ok($this->auth->requestLogin($data['mobile']), 'OTP sent');
     }
 
@@ -55,6 +58,19 @@ class AuthController extends Controller
             return $this->fail($e->getMessage(), null, 422);
         }
         $u = $result['user'];
+
+        // Flagged / blocked riders may not access the account even with a valid
+        // OTP — revoke the freshly-issued token and deny.
+        if ($u->isBlocked() || $u->isRedFlagged()) {
+            $u->tokens()->delete();
+
+            return $this->fail(
+                $u->isBlocked() ? 'Account is blocked.' : 'Account is flagged. Please contact support.',
+                null,
+                403
+            );
+        }
+
         return $this->ok([
             'token' => $result['token'],
             'token_type' => 'Bearer',
@@ -63,6 +79,7 @@ class AuthController extends Controller
                 'id' => $u->id, 'name' => $u->name, 'mobile' => $u->mobile,
                 'email' => $u->email, 'kyc_status' => $u->profile?->kyc_status ?? 'none',
                 'is_blocked' => $u->isBlocked(),
+                'is_red_flagged' => $u->isRedFlagged(),
             ],
         ], 'Login successful');
     }
@@ -70,10 +87,23 @@ class AuthController extends Controller
     public function me(Request $r)
     {
         $u = $r->user()->load('profile');
+
+        // A rider flagged / blocked mid-session loses access on the next call.
+        if ($u->isBlocked() || $u->isRedFlagged()) {
+            $u->currentAccessToken()?->delete();
+
+            return $this->fail(
+                $u->isBlocked() ? 'Account is blocked.' : 'Account is flagged. Please contact support.',
+                null,
+                403
+            );
+        }
+
         return $this->ok([
             'id' => $u->id, 'name' => $u->name, 'mobile' => $u->mobile,
             'email' => $u->email, 'kyc_status' => $u->profile?->kyc_status ?? 'none',
             'is_blocked' => $u->isBlocked(),
+            'is_red_flagged' => $u->isRedFlagged(),
         ]);
     }
 

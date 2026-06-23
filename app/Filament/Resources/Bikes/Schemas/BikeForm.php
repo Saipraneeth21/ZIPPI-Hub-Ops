@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Bikes\Schemas;
 
 use App\Enums\BikeStatus;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -14,6 +15,22 @@ class BikeForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+            // Mandatory bike photo. Saved on the Edit screen via the Images
+            // relation manager, so this field is create-only; CreateBike turns
+            // the uploaded file into the bike's primary image.
+            Section::make('Photo')
+                ->visibleOn('create')
+                ->schema([
+                    FileUpload::make('primary_image')
+                        ->label('Bike picture')
+                        ->image()
+                        ->disk(config('filesystems.default'))
+                        ->directory('bikes')
+                        ->required()
+                        ->helperText('Required. Used as the primary photo for this bike.')
+                        ->columnSpanFull(),
+                ]),
+
             Section::make('Identity')
                 ->columns(2)
                 ->schema([

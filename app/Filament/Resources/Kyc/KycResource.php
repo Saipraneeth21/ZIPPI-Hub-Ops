@@ -14,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 /**
  * KYC review queue (Admin-Dashboard/01-Admin-Modules.md §3.3). A second
@@ -30,7 +31,9 @@ class KycResource extends Resource
 
     protected static ?string $navigationLabel = 'KYC Queue';
 
-    protected static ?int $navigationSort = 11;
+    protected static string|UnitEnum|null $navigationGroup = 'Customers';
+
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $recordTitleAttribute = 'name';
 

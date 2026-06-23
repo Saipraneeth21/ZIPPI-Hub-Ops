@@ -9,6 +9,10 @@ class UserProfile extends Model
     protected $primaryKey = 'user_id';
     public $incrementing = false;
     protected $guarded = [];
-    protected $casts = ['is_blocked' => 'boolean'];
+    protected $casts = [
+        'is_blocked' => 'boolean',
+        'is_red_flagged' => 'boolean',
+        'red_flagged_at' => 'datetime',
+    ];
     public function user(): BelongsTo { return $this->belongsTo(User::class); }
 }
