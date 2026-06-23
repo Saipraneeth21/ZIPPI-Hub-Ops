@@ -83,9 +83,13 @@ class BikesTable
                         Notification::make()->title('Status updated')->success()->send();
                     }),
 
-                // Soft delete — blocked while the bike has confirmed/active bookings.
+                // Soft delete — shown always, but disabled while the bike has
+                // confirmed/active bookings (with a tooltip explaining why).
                 DeleteAction::make()
-                    ->hidden(fn (Bike $record) => $record->hasBlockingBookings()),
+                    ->disabled(fn (Bike $record) => $record->hasBlockingBookings())
+                    ->tooltip(fn (Bike $record) => $record->hasBlockingBookings()
+                        ? 'Cannot delete — bike has active or confirmed bookings'
+                        : null),
                 RestoreAction::make(),
             ])
             ->toolbarActions([
