@@ -9,12 +9,6 @@ class CreateIncidentReport extends CreateRecord
 {
     protected static string $resource = IncidentReportResource::class;
 
-    /** Keep only "Create" and "Cancel" — drop "Create & create another". */
-    protected function getFormActions(): array
-    {
-        return [
-            $this->getCreateFormAction(),
-            $this->getCancelFormAction(),
-        ];
-    }
+    // Only "Create" and "Cancel" — no "Create & create another".
+    protected static bool $canCreateAnother = false;
 }

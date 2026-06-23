@@ -9,6 +9,9 @@ class CreateBike extends CreateRecord
 {
     protected static string $resource = BikeResource::class;
 
+    // Only "Create" and "Cancel" — no "Create & create another".
+    protected static bool $canCreateAnother = false;
+
     /** Holds the uploaded photo path between create and afterCreate. */
     protected ?string $primaryImagePath = null;
 

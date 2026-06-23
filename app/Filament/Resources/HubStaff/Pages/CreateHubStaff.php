@@ -9,14 +9,8 @@ class CreateHubStaff extends CreateRecord
 {
     protected static string $resource = HubStaffResource::class;
 
-    /** Keep only "Create" and "Cancel" — drop "Create & create another". */
-    protected function getFormActions(): array
-    {
-        return [
-            $this->getCreateFormAction(),
-            $this->getCancelFormAction(),
-        ];
-    }
+    // Only "Create" and "Cancel" — no "Create & create another".
+    protected static bool $canCreateAnother = false;
 
     /**
      * After saving, reopen a blank create form (instead of the edit page) so the

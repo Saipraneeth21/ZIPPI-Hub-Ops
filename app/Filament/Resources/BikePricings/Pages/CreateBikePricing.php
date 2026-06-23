@@ -8,4 +8,7 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateBikePricing extends CreateRecord
 {
     protected static string $resource = BikePricingResource::class;
+
+    // Only "Create" and "Cancel" — no "Create & create another".
+    protected static bool $canCreateAnother = false;
 }

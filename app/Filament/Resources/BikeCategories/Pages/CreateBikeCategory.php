@@ -8,4 +8,7 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateBikeCategory extends CreateRecord
 {
     protected static string $resource = BikeCategoryResource::class;
+
+    // Only "Create" and "Cancel" — no "Create & create another".
+    protected static bool $canCreateAnother = false;
 }

@@ -9,6 +9,9 @@ class CreateInstantDispatch extends CreateRecord
 {
     protected static string $resource = InstantDispatchResource::class;
 
+    // Only "Create" and "Cancel" — no "Create & create another".
+    protected static bool $canCreateAnother = false;
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['created_by'] = auth()->id();
