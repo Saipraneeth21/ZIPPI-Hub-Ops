@@ -41,9 +41,9 @@ class AdminAccountTest extends TestCase
         $this->assertSame('renamed@zippi.in', $admin->email);
     }
 
-    public function test_admin_can_change_their_password(): void
+    public function test_super_admin_can_change_their_password(): void
     {
-        $admin = $this->admin();
+        $admin = $this->admin(AdminRole::SuperAdmin);
         $this->actingAs($admin, 'admin');
 
         Livewire::test(AccountSettings::class)
@@ -61,7 +61,7 @@ class AdminAccountTest extends TestCase
 
     public function test_wrong_current_password_is_rejected(): void
     {
-        $admin = $this->admin();
+        $admin = $this->admin(AdminRole::SuperAdmin);
         $this->actingAs($admin, 'admin');
 
         Livewire::test(AccountSettings::class)
@@ -72,6 +72,16 @@ class AdminAccountTest extends TestCase
             ])
             ->callAction('save')
             ->assertHasFormErrors(['current_password']);
+    }
+
+    public function test_non_super_admin_cannot_change_their_password(): void
+    {
+        // Only Super Admins manage passwords — the save action is hidden for others.
+        $this->actingAs($this->admin(AdminRole::Ops), 'admin');
+
+        Livewire::test(AccountSettings::class)
+            ->assertOk()
+            ->assertActionHidden('save');
     }
 
     public function test_account_pages_are_available_to_every_role(): void

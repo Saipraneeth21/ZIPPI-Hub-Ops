@@ -49,47 +49,58 @@ class AccountSettings extends Page implements HasActions, HasSchemas
     public function form(Schema $schema): Schema
     {
         $admin = auth()->user();
+        $isSuperAdmin = $admin?->isSuperAdmin() ?? false;
 
-        return $schema
-            ->components([
-                Section::make('Profile')
-                    ->description('You are signed in as:')
-                    ->columns(2)
-                    ->schema([
-                        Placeholder::make('account_name')
-                            ->label('Name')
-                            ->content($admin?->name ?? '—'),
-                        Placeholder::make('account_role')
-                            ->label('Role')
-                            ->content($admin?->role?->label() ?? '—'),
-                    ]),
+        $components = [
+            Section::make('Profile')
+                ->description('You are signed in as:')
+                ->columns(2)
+                ->schema([
+                    Placeholder::make('account_name')
+                        ->label('Name')
+                        ->content($admin?->name ?? '—'),
+                    Placeholder::make('account_role')
+                        ->label('Role')
+                        ->content($admin?->role?->label() ?? '—'),
+                ]),
+        ];
 
-                Section::make('Change password')
-                    ->description('Choose a strong password you do not use elsewhere.')
-                    ->columns(2)
-                    ->schema([
-                        TextInput::make('current_password')
-                            ->label('Current password')
-                            ->password()
-                            ->revealable()
-                            ->required()
-                            ->currentPassword(guard: 'admin')
-                            ->columnSpanFull(),
-                        TextInput::make('password')
-                            ->label('New password')
-                            ->password()
-                            ->revealable()
-                            ->required()
-                            ->minLength(8)
-                            ->confirmed(),
-                        TextInput::make('password_confirmation')
-                            ->label('Confirm new password')
-                            ->password()
-                            ->revealable()
-                            ->required(),
-                    ]),
-            ])
-            ->statePath('data');
+        if ($isSuperAdmin) {
+            // Only a Super Admin manages passwords.
+            $components[] = Section::make('Change password')
+                ->description('Choose a strong password you do not use elsewhere.')
+                ->columns(2)
+                ->schema([
+                    TextInput::make('current_password')
+                        ->label('Current password')
+                        ->password()
+                        ->revealable()
+                        ->required()
+                        ->currentPassword(guard: 'admin')
+                        ->columnSpanFull(),
+                    TextInput::make('password')
+                        ->label('New password')
+                        ->password()
+                        ->revealable()
+                        ->required()
+                        ->minLength(8)
+                        ->confirmed(),
+                    TextInput::make('password_confirmation')
+                        ->label('Confirm new password')
+                        ->password()
+                        ->revealable()
+                        ->required(),
+                ]);
+        } else {
+            $components[] = Section::make('Password')
+                ->schema([
+                    Placeholder::make('password_note')
+                        ->hiddenLabel()
+                        ->content('Your password is managed by a Super Admin. Please contact them to set or reset it.'),
+                ]);
+        }
+
+        return $schema->components($components)->statePath('data');
     }
 
     public function saveAction(): Action
@@ -97,7 +108,13 @@ class AccountSettings extends Page implements HasActions, HasSchemas
         return Action::make('save')
             ->label('Update password')
             ->icon('heroicon-m-key')
+            // Only Super Admins may change a password here.
+            ->visible(fn (): bool => auth()->user()?->isSuperAdmin() ?? false)
             ->action(function (): void {
+                if (! (auth()->user()?->isSuperAdmin() ?? false)) {
+                    return;
+                }
+
                 $data = $this->form->getState();
 
                 auth()->user()->update(['password' => Hash::make($data['password'])]);
