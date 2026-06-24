@@ -104,8 +104,11 @@ class AdminFleetModuleTest extends TestCase
         $this->assertTrue($bike->hasBlockingBookings());
         $this->assertFalse(\App\Filament\Resources\Bikes\BikeResource::canDelete($bike->fresh()));
 
+        // Delete stays visible (so staff see the option) but is disabled with a
+        // tooltip explaining why, rather than being hidden outright.
         Livewire::test(ListBikes::class)
-            ->assertTableActionHidden('delete', $bike);
+            ->assertTableActionVisible('delete', $bike)
+            ->assertTableActionDisabled('delete', $bike);
     }
 
     public function test_pricing_relation_manager_stores_paise(): void

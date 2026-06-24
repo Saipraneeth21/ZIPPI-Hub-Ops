@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Rental\AdminUser;
+use App\Models\Rental\HubStaff;
 use App\Models\User;
 
 return [
@@ -49,6 +50,12 @@ return [
             'driver' => 'session',
             'provider' => 'admin_users',
         ],
+
+        // Hub Operations (Filament /hub panel) — on-site hub staff.
+        'hub' => [
+            'driver' => 'session',
+            'provider' => 'hub_staff',
+        ],
     ],
 
     /*
@@ -77,6 +84,11 @@ return [
         'admin_users' => [
             'driver' => 'eloquent',
             'model' => AdminUser::class,
+        ],
+
+        'hub_staff' => [
+            'driver' => 'eloquent',
+            'model' => HubStaff::class,
         ],
     ],
 

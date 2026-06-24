@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'kyc.approved' => \App\Http\Middleware\EnsureKycApproved::class,
             'idempotency' => \App\Http\Middleware\IdempotencyKey::class,
             'role' => \App\Http\Middleware\EnsureRole::class,
+            'hub.staff' => \App\Http\Middleware\EnsureHubStaff::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -1,0 +1,74 @@
+<?php
+
+namespace App\Providers\Filament;
+
+use App\Filament\Hub\Auth\Login as HubLogin;
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
+use Filament\Http\Middleware\DisableBladeIconComponents;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationItem;
+use Filament\Pages\Dashboard;
+use Filament\Panel;
+use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+
+/**
+ * Hub Operations Filament panel (/hub) for on-site hub staff. Completely
+ * isolated from the admin panel: own id/path/guard and its own resource,
+ * page and widget discovery namespace (App\Filament\Hub).
+ */
+class HubPanelProvider extends PanelProvider
+{
+    public function panel(Panel $panel): Panel
+    {
+        return $panel
+            ->id('hub')
+            ->path('hub')
+            ->brandName('ZIPPI Hub Ops')
+            ->authGuard('hub')
+            ->login(HubLogin::class)
+            ->colors([
+                'primary' => Color::hex('#40E0D0'),
+            ])
+            ->discoverResources(in: app_path('Filament/Hub/Resources'), for: 'App\Filament\Hub\Resources')
+            ->discoverPages(in: app_path('Filament/Hub/Pages'), for: 'App\Filament\Hub\Pages')
+            ->pages([
+                Dashboard::class,
+            ])
+            ->discoverWidgets(in: app_path('Filament/Hub/Widgets'), for: 'App\Filament\Hub\Widgets')
+            ->navigationItems([
+                NavigationItem::make('Logout')
+                    ->group('Account')
+                    ->icon(Heroicon::OutlinedArrowRightOnRectangle)
+                    ->sort(9)
+                    ->url(fn () => filament()->getLogoutUrl()),
+            ])
+            ->navigationGroups([
+                'Operations',
+                'Fleet',
+                'Account',
+            ])
+            ->middleware([
+                EncryptCookies::class,
+                AddQueuedCookiesToResponse::class,
+                StartSession::class,
+                AuthenticateSession::class,
+                ShareErrorsFromSession::class,
+                PreventRequestForgery::class,
+                SubstituteBindings::class,
+                DisableBladeIconComponents::class,
+                DispatchServingFilamentEvent::class,
+            ])
+            ->authMiddleware([
+                Authenticate::class,
+            ]);
+    }
+}

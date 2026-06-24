@@ -10,6 +10,12 @@ use App\Http\Controllers\Api\Rental\NotificationController;
 use App\Http\Controllers\Api\Rental\PaymentController;
 use App\Http\Controllers\Api\Rental\ProfileController;
 use App\Http\Controllers\Api\Rental\WalletController;
+use App\Http\Controllers\Api\Hub\AuthController as HubAuthController;
+use App\Http\Controllers\Api\Hub\BookingController as HubBookingController;
+use App\Http\Controllers\Api\Hub\DashboardController as HubDashboardController;
+use App\Http\Controllers\Api\Hub\FleetController as HubFleetController;
+use App\Http\Controllers\Api\Hub\IncidentController as HubIncidentController;
+use App\Http\Controllers\Api\Hub\MaintenanceController as HubMaintenanceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -94,5 +100,43 @@ Route::prefix('rental/v1')->group(function () {
             Route::post('bikes', [BikeAdminController::class, 'store']);
             Route::put('bikes/{bike}/status', [BikeAdminController::class, 'updateStatus']);
         });
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| ZIPPI Hub Operations API — v1 (additive, hub-staff only)
+|--------------------------------------------------------------------------
+| Consumed by the Hub Operations mobile app. All protected routes require a
+| HubStaff Sanctum token (auth:sanctum + hub.staff) and are scoped to the
+| authenticated staff member's hub. Does not touch the rider API above.
+*/
+Route::prefix('hub/v1')->group(function () {
+
+    // Public auth (employee_code + password)
+    Route::post('auth/login', [HubAuthController::class, 'login']);
+
+    Route::middleware(['auth:sanctum', 'hub.staff'])->group(function () {
+        Route::get('auth/me', [HubAuthController::class, 'me']);
+        Route::post('auth/logout', [HubAuthController::class, 'logout']);
+
+        // Dashboard (counts + upcoming pickups + due returns)
+        Route::get('dashboard', [HubDashboardController::class, 'index']);
+
+        // Bookings — lookup + pickup/return workflows
+        Route::get('bookings/search', [HubBookingController::class, 'search']);
+        Route::get('pickups', [HubBookingController::class, 'pickups']);
+        Route::get('rentals/active', [HubBookingController::class, 'activeRentals']);
+        Route::get('bookings/{booking}', [HubBookingController::class, 'show']);
+        Route::post('bookings/{booking}/handover', [HubBookingController::class, 'handover']);
+        Route::post('bookings/{booking}/return', [HubBookingController::class, 'returnBike']);
+
+        // Fleet (read-only visibility)
+        Route::get('fleet', [HubFleetController::class, 'index']);
+        Route::get('fleet/{bike}', [HubFleetController::class, 'show']);
+
+        // Maintenance + Incident reporting
+        Route::post('maintenance', [HubMaintenanceController::class, 'store']);
+        Route::post('incidents', [HubIncidentController::class, 'store']);
     });
 });

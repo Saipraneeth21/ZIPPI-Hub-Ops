@@ -9,6 +9,7 @@ use App\Models\Rental\BikePricing;
 use App\Models\Rental\City;
 use App\Models\Rental\Coupon;
 use App\Models\Rental\Hub;
+use App\Models\Rental\HubStaff;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -72,6 +73,12 @@ class DatabaseSeeder extends Seeder
         AdminUser::create([
             'name' => 'KYC Reviewer', 'email' => 'kyc@zippi.in',
             'password' => Hash::make('password'), 'role' => 'kyc_reviewer', 'is_active' => true,
+        ]);
+
+        // Hub Operations — demo on-site staff for the /hub panel + Hub Ops API.
+        HubStaff::create([
+            'hub_id' => $hub->id, 'name' => 'Hub Manager', 'role' => 'manager',
+            'employee_code' => 'HUB001', 'password' => Hash::make('password'), 'is_active' => true,
         ]);
     }
 }

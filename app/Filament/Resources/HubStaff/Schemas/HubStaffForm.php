@@ -57,7 +57,14 @@ class HubStaffForm
                         ->relationship('hub', 'name')
                         ->searchable()
                         ->preload()
-                        ->placeholder('Assign to a hub (optional)'),
+                        ->required()
+                        // Auto-apply the hub: if only one hub exists, pre-select
+                        // it so staff are never created without a hub (the whole
+                        // Hub Ops app is scoped to the staff member's hub).
+                        ->default(fn () => \App\Models\Rental\Hub::count() === 1
+                            ? \App\Models\Rental\Hub::value('id')
+                            : null)
+                        ->placeholder('Assign to a hub'),
 
                     Toggle::make('is_active')
                         ->label('Active')

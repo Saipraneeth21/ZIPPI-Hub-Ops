@@ -14,10 +14,16 @@ class IncidentReport extends Model
     protected $casts = [
         'incident_date' => 'date',
         'estimated_cost' => 'integer',
+        'photos' => 'array',
     ];
 
     public function bike(): BelongsTo
     {
         return $this->belongsTo(Bike::class, 'bike_id');
+    }
+
+    public function booking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class, 'booking_id');
     }
 }
