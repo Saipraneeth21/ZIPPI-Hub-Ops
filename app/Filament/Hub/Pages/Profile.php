@@ -14,6 +14,7 @@ use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Hash;
 use UnitEnum;
 
 /**
@@ -39,9 +40,12 @@ class Profile extends Page implements HasActions, HasSchemas
 
     public ?array $data = [];
 
+    public ?array $passwordData = [];
+
     public function mount(): void
     {
         $this->form->fill(auth('hub')->user()->only(['name']));
+        $this->passwordForm->fill();
     }
 
     public function form(Schema $schema): Schema
@@ -86,6 +90,60 @@ class Profile extends Page implements HasActions, HasSchemas
                 auth('hub')->user()->update(['name' => $data['name']]);
 
                 Notification::make()->title('Profile updated')->success()->send();
+            });
+    }
+
+    public function passwordForm(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Section::make('Change password')
+                    ->description('Update the password you use to sign in to the Hub Ops app.')
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('current_password')
+                            ->label('Current password')
+                            ->password()
+                            ->revealable()
+                            ->required()
+                            ->columnSpanFull(),
+                        TextInput::make('new_password')
+                            ->label('New password')
+                            ->password()
+                            ->revealable()
+                            ->required()
+                            ->minLength(8)
+                            ->confirmed(),
+                        TextInput::make('new_password_confirmation')
+                            ->label('Confirm new password')
+                            ->password()
+                            ->revealable()
+                            ->required(),
+                    ]),
+            ])
+            ->statePath('passwordData');
+    }
+
+    public function changePasswordAction(): Action
+    {
+        return Action::make('changePassword')
+            ->label('Update password')
+            ->icon('heroicon-m-key')
+            ->action(function (): void {
+                $data = $this->passwordForm->getState();
+                $staff = auth('hub')->user();
+
+                if (! Hash::check($data['current_password'], $staff->password)) {
+                    Notification::make()->title('Current password is incorrect')->danger()->send();
+
+                    return;
+                }
+
+                $staff->update(['password' => $data['new_password']]);
+
+                $this->passwordForm->fill();
+
+                Notification::make()->title('Password updated')->success()->send();
             });
     }
 }
