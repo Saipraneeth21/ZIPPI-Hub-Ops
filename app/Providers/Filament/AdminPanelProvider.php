@@ -28,6 +28,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->brandName('ZIPPI Rental')
+            // Clicking the brand in the header returns to the dashboard.
+            ->homeUrl(fn (): string => Dashboard::getUrl())
             ->authGuard('admin')
             ->login()
             ->colors([
