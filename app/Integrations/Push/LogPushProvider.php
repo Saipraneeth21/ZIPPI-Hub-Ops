@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Integrations\Push;
 
 use App\Integrations\Contracts\PushProvider;
@@ -9,6 +10,6 @@ class LogPushProvider implements PushProvider
 {
     public function send(array $tokens, string $title, string $body, array $data = []): void
     {
-        Log::info('[PUSH] ' . $title, ['tokens' => count($tokens), 'body' => $body, 'data' => $data]);
+        Log::info('[PUSH] '.$title, ['tokens' => count($tokens), 'body' => $body, 'data' => $data]);
     }
 }

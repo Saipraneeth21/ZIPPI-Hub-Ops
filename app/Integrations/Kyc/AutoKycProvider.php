@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Integrations\Kyc;
 
 use App\Integrations\Contracts\KycProvider;
@@ -10,8 +11,8 @@ use Illuminate\Support\Str;
  */
 class AutoKycProvider implements KycProvider
 {
-    public function submit(int $userId, string $documentType, string $filePath): array
+    public function submit(int $userId, string $documentType, string $filePath, array $meta = []): array
     {
-        return ['reference' => 'kyc_' . Str::random(12), 'auto_result' => 'pending'];
+        return ['reference' => 'kyc_'.Str::random(12), 'auto_result' => 'pending'];
     }
 }

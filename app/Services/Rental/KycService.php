@@ -1,6 +1,8 @@
 <?php
+
 namespace App\Services\Rental;
 
+use App\Enums\KycStatus;
 use App\Integrations\Contracts\KycProvider;
 use App\Models\Rental\KycDocument;
 use App\Models\Rental\KycReview;
@@ -17,12 +19,23 @@ class KycService
         private readonly NotificationService $notifications,
     ) {}
 
-    public function uploadDocument(User $user, string $type, string $filePath, ?string $numberMasked = null, ?string $backPath = null): KycDocument
+    public function uploadDocument(User $user, string $type, string $filePath, ?string $numberMasked = null, ?string $backPath = null, ?string $documentNumber = null, array $meta = []): KycDocument
     {
         if ($user->isKycApproved()) {
             throw new RuntimeException('KYC already approved.');
         }
-        $result = $this->provider->submit($user->id, $type, $filePath);
+        // Pass the raw number + DOB to the provider for number-based verification
+        // (e.g. Quickkyc driving-licence). Only the masked number is persisted.
+        $result = $this->provider->submit($user->id, $type, $filePath, array_filter([
+            'document_number' => $documentNumber,
+        ] + $meta));
+
+        // Honor the provider's automated outcome; 'pending' routes to manual review.
+        $status = match ($result['auto_result'] ?? 'pending') {
+            'verified' => 'approved',
+            'failed' => 'rejected',
+            default => 'pending',
+        };
 
         return KycDocument::create([
             'user_id' => $user->id,
@@ -31,13 +44,15 @@ class KycService
             'file_path' => $filePath,
             'file_back_path' => $backPath,
             'provider_ref' => $result['reference'],
-            'status' => 'pending',
+            'status' => $status,
+            'verified_at' => $status === 'approved' ? now() : null,
         ]);
     }
 
     public function submit(User $user): UserProfile
     {
-        $types = $user->kycDocuments()->pluck('document_type')->unique();
+        $docs = $user->kycDocuments()->get();
+        $types = $docs->pluck('document_type')->unique();
         foreach (['government_id', 'driving_license'] as $required) {
             if (! $types->contains($required)) {
                 throw new RuntimeException("Missing required document: {$required}");
@@ -47,8 +62,24 @@ class KycService
         if (in_array($profile->kyc_status, ['approved', 'under_review'], true)) {
             throw new RuntimeException('KYC already submitted or approved.');
         }
+
+        // Auto-decision when the provider already verified/failed the required docs.
+        $required = $docs->whereIn('document_type', ['government_id', 'driving_license']);
+        if ($required->isNotEmpty() && $required->every(fn ($d) => $d->status === KycStatus::Approved)) {
+            $this->approve($user); // adminId null => source 'auto'
+
+            return $profile->refresh();
+        }
+        if ($required->contains(fn ($d) => $d->status === KycStatus::Rejected)) {
+            $this->reject($user, 'Automated verification could not confirm one or more documents. Our team will review them shortly.');
+
+            return $profile->refresh();
+        }
+
+        // Otherwise route to manual admin review (default / ambiguous).
         $profile->update(['kyc_status' => 'under_review']);
         $user->kycDocuments()->update(['status' => 'under_review']);
+
         return $profile;
     }
 

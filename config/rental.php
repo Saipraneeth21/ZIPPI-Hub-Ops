@@ -17,6 +17,37 @@ return [
         'max_attempts' => 5,
         'resend_cooldown_seconds' => 30,
         'max_resends' => 3,
+
+        // SMS delivery provider: 'log' (dev — writes to storage/logs), 'edumarc', or 'msg91'.
+        'provider' => env('OTP_PROVIDER', 'log'),
+
+        'edumarc' => [
+            'api_key' => env('EDUMARC_API_KEY'),
+            'sender_id' => env('EDUMARC_SENDER_ID'),
+            // DLT-approved template id registered with Edumarc.
+            'template_id' => env('EDUMARC_TEMPLATE_ID'),
+            'endpoint' => env('EDUMARC_ENDPOINT', 'https://smsapi.edumarcsms.com/api/v1/sendsms'),
+            // The OTP is substituted for the {otp} placeholder. Must match the DLT template text.
+            'message_template' => env('EDUMARC_MESSAGE_TEMPLATE', 'Your ZIPPI OTP is {otp}. Valid for 5 minutes. Do not share it with anyone.'),
+        ],
+
+        'msg91' => [
+            'auth_key' => env('MSG91_AUTH_KEY'),
+            'template_id' => env('MSG91_TEMPLATE_ID'),
+        ],
+    ],
+
+    // KYC verification provider: 'auto' (manual admin review — default) or 'quickkyc'.
+    'kyc' => [
+        'provider' => env('KYC_PROVIDER', 'auto'),
+        'quickkyc' => [
+            'api_key' => env('QUICKKYC_API_KEY'),
+            'base_url' => env('QUICKKYC_BASE_URL', 'https://api.quickkyc.com'),
+            'dl_path' => env('QUICKKYC_DL_PATH', '/verify/driving-license'),
+            // Where in the JSON response the pass/fail signal lives, and its success value.
+            'success_path' => env('QUICKKYC_SUCCESS_PATH', 'status'),
+            'success_value' => env('QUICKKYC_SUCCESS_VALUE', 'success'),
+        ],
     ],
 
     // Cancellation refund policy by lead time (hours before start => fraction of rental refunded).

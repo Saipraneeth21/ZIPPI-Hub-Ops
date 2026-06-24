@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Integrations\Otp;
 
 use App\Integrations\Contracts\OtpProvider;
@@ -17,7 +18,7 @@ class Msg91Provider implements OtpProvider
     {
         Http::withHeaders(['authkey' => $this->authKey])->post($this->endpoint, [
             'template_id' => $this->templateId,
-            'mobile' => '91' . $mobile,
+            'mobile' => '91'.$mobile,
             'otp' => $otp,
         ]);
     }

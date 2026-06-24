@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Integrations\Contracts;
 
 interface PushProvider

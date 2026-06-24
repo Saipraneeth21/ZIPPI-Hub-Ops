@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Integrations\Otp;
 
 use App\Integrations\Contracts\OtpProvider;

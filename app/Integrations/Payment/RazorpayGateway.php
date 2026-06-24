@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Integrations\Payment;
 
 use App\Integrations\Contracts\PaymentGateway;
@@ -23,30 +24,32 @@ class RazorpayGateway implements PaymentGateway
     public function createOrder(int $amountPaise, string $currency, string $receipt): array
     {
         // In live mode this would POST /v1/orders to Razorpay.
-        return ['order_id' => 'order_' . Str::upper(Str::random(14))];
+        return ['order_id' => 'order_'.Str::upper(Str::random(14))];
     }
 
     public function verifySignature(string $orderId, string $paymentId, string $signature): bool
     {
-        $expected = hash_hmac('sha256', $orderId . '|' . $paymentId, $this->keySecret);
+        $expected = hash_hmac('sha256', $orderId.'|'.$paymentId, $this->keySecret);
+
         return hash_equals($expected, $signature);
     }
 
     public function verifyWebhookSignature(string $payload, string $signature): bool
     {
         $expected = hash_hmac('sha256', $payload, $this->webhookSecret);
+
         return hash_equals($expected, $signature);
     }
 
     public function refund(string $paymentId, int $amountPaise): array
     {
         // In live mode this would POST /v1/payments/{id}/refund.
-        return ['refund_id' => 'rfnd_' . Str::upper(Str::random(14))];
+        return ['refund_id' => 'rfnd_'.Str::upper(Str::random(14))];
     }
 
     /** Helper used by tests/dev to compute a valid checkout signature. */
     public function computeSignature(string $orderId, string $paymentId): string
     {
-        return hash_hmac('sha256', $orderId . '|' . $paymentId, $this->keySecret);
+        return hash_hmac('sha256', $orderId.'|'.$paymentId, $this->keySecret);
     }
 }
