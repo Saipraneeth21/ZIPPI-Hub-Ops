@@ -76,21 +76,23 @@ jobs:
           npm run build
 
       - name: Package release
+        # Write the archive outside the working tree ($RUNNER_TEMP) so tar isn't
+        # reading the directory while writing into it ("file changed as we read it").
         run: |
-          tar -czf release.tar.gz \
+          tar -czf "$RUNNER_TEMP/release.tar.gz" \
             --exclude='./.git' \
             --exclude='./node_modules' \
             --exclude='./tests' \
             --exclude='./.github' \
-            --exclude='./release.tar.gz' \
             --exclude='./.env' \
+            --exclude='./database/database.sqlite' \
             .
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
           name: zippi-hub-ops-release
-          path: release.tar.gz
+          path: ${{ runner.temp }}/release.tar.gz
           retention-days: 7
 
   deploy:
