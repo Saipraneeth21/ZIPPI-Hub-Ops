@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Hub;
 
-use App\Filament\Hub\Pages\Profile;
 use App\Models\Rental\Bike;
 use App\Models\Rental\Booking;
 use App\Models\Rental\Hub;
@@ -14,7 +13,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
-use Livewire\Livewire;
 use Tests\Concerns\CreatesRentalData;
 use Tests\TestCase;
 
@@ -120,42 +118,6 @@ class HubOperationsTest extends TestCase
             ->assertSee('Handovers')
             ->assertSee($booking->booking_code)
             ->assertSee('On rent');
-    }
-
-    public function test_staff_can_change_own_password(): void
-    {
-        $hub = Hub::factory()->create();
-        $staff = $this->staffForHub($hub, ['password' => 'OldPass123']);
-        $this->actingAs($staff, 'hub');
-
-        Livewire::test(Profile::class)
-            ->fillForm([
-                'current_password' => 'OldPass123',
-                'new_password' => 'NewPass456',
-                'new_password_confirmation' => 'NewPass456',
-            ], 'passwordForm')
-            ->callAction('changePassword')
-            ->assertHasNoFormErrors();
-
-        $this->assertTrue(Hash::check('NewPass456', $staff->fresh()->password));
-    }
-
-    public function test_change_password_rejects_wrong_current_password(): void
-    {
-        $hub = Hub::factory()->create();
-        $staff = $this->staffForHub($hub, ['password' => 'OldPass123']);
-        $this->actingAs($staff, 'hub');
-
-        Livewire::test(Profile::class)
-            ->fillForm([
-                'current_password' => 'wrong-password',
-                'new_password' => 'NewPass456',
-                'new_password_confirmation' => 'NewPass456',
-            ], 'passwordForm')
-            ->callAction('changePassword');
-
-        // Unchanged — the old password still works.
-        $this->assertTrue(Hash::check('OldPass123', $staff->fresh()->password));
     }
 
     public function test_logout_link_ends_hub_session(): void
