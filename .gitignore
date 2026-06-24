@@ -21,9 +21,11 @@
 /storage/*.key
 /storage/pail
 /vendor
-# database.sqlite is tracked on purpose so the local dev DB syncs across machines.
 /database/*.sqlite-journal
 _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Local SQLite database — never commit (demo data + password hashes)
+/database/database.sqlite

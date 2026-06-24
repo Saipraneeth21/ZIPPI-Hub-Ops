@@ -20,13 +20,15 @@ php artisan migrate:fresh --seed # build a clean, fully-seeded database
 php artisan serve                # http://127.0.0.1:8000
 ```
 API base path: `http://127.0.0.1:8000/api/rental/v1`.
-Admin dashboard: `http://127.0.0.1:8000/admin` — log in with `admin@zippi.in` / `password`.
+Admin dashboard: `http://127.0.0.1:8000/admin` — the seeder creates a local-only
+super-admin (`admin@zippi.in`); its password is defined in
+[`database/seeders/DatabaseSeeder.php`](database/seeders/DatabaseSeeder.php). For
+any real deployment, change it immediately.
 
-> **Always run `migrate:fresh --seed` on a fresh clone.** A `database/database.sqlite`
-> file is committed for convenience, but any encrypted columns in it (e.g. Aadhaar on
-> Instant Dispatch) were encrypted with the original author's `APP_KEY` and will read as
-> `••• unreadable` under your own key. `migrate:fresh --seed` rebuilds the DB under your
-> key with no encrypted rows, so you start clean and error-free.
+> **Always run `migrate:fresh --seed` on a fresh clone.** The SQLite database is
+> **not** committed (it would otherwise ship demo data and password hashes), so
+> `migrate:fresh --seed` builds it locally under your own `APP_KEY` — clean and
+> error-free, with no encrypted rows from another key.
 
 ### Run the tests
 ```bash
@@ -48,11 +50,11 @@ mobile app) and a dedicated **Filament panel**.
   (a hub is required and auto-applied when only one exists).
 
 ### Demo login
-After `migrate:fresh --seed`, a demo staff account is created:
-
-| Employee code | Password   | Hub             |
-|---------------|------------|-----------------|
-| `HUB001`      | `password` | Hitech City Hub |
+`migrate:fresh --seed` creates a demo hub-staff account (employee code `HUB001`,
+assigned to the seeded hub). The demo password is defined **only** in
+[`database/seeders/DatabaseSeeder.php`](database/seeders/DatabaseSeeder.php) and
+is for **local development only** — never deploy seeded demo credentials.
+Create real staff (with your own passwords) in **Admin → Account → Hub Staff Login**.
 
 ### What hub staff can do (all scoped to their own hub)
 - **Dashboard** — KPI cards (Available Bikes, Active Rentals, Expected Returns
@@ -97,7 +99,7 @@ DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=zippi_rental
 DB_USERNAME=zippi
-DB_PASSWORD=secret
+DB_PASSWORD=<your-db-password>   # keep real credentials in .env (never committed)
 ```
 Migrations are additive and use the `rental_*` prefix, so they coexist with an existing ZIPPI schema (the shared `users` table is extended, not duplicated).
 
@@ -144,6 +146,6 @@ tests/{Unit,Feature}/*              # 23 tests
 ```
 
 ## Seeded demo data
-After `migrate:fresh --seed`: Launch City + MG Road Hub, 12 bikes across 3 categories with pricing, coupon `ZIPPI100` (₹100 off), admin logins `admin@zippi.in` / `kyc@zippi.in` (password `password`).
+After `migrate:fresh --seed`: Launch City + MG Road Hub, 12 bikes across 3 categories with pricing, coupon `ZIPPI100` (₹100 off), and local-only admin logins (`admin@zippi.in`, `kyc@zippi.in`) whose passwords are set in [`database/seeders/DatabaseSeeder.php`](database/seeders/DatabaseSeeder.php). These are demo credentials — rotate them before any real deployment.
 
 See [`../APIs/`](../APIs/) for the complete request/response contracts.
