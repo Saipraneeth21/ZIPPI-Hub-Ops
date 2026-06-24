@@ -28,3 +28,12 @@ Route::get('/admin/account/logout', function (Request $request) {
 
     return redirect()->route('filament.admin.auth.login');
 })->middleware(['auth:admin'])->name('admin.account.logout');
+
+// Hub Ops Account → Logout. Sidebar link (GET) that ends the hub-staff session.
+Route::get('/hub/account/logout', function (Request $request) {
+    Auth::guard('hub')->logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect()->route('filament.hub.auth.login');
+})->middleware(['auth:hub'])->name('hub.account.logout');

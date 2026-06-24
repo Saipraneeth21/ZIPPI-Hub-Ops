@@ -120,6 +120,18 @@ class HubOperationsTest extends TestCase
             ->assertSee('On rent');
     }
 
+    public function test_logout_link_ends_hub_session(): void
+    {
+        $hub = Hub::factory()->create();
+        $staff = $this->staffForHub($hub);
+
+        $this->actingAs($staff, 'hub')
+            ->get('/hub/account/logout')
+            ->assertRedirect(route('filament.hub.auth.login'));
+
+        $this->assertGuest('hub');
+    }
+
     public function test_profile_page_renders_editable_form_for_staff(): void
     {
         $hub = Hub::factory()->create(['name' => 'Hitech City Hub']);

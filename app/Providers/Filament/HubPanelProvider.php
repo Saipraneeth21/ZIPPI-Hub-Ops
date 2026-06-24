@@ -49,7 +49,7 @@ class HubPanelProvider extends PanelProvider
                     ->group('Account')
                     ->icon(Heroicon::OutlinedArrowRightOnRectangle)
                     ->sort(9)
-                    ->url(fn () => filament()->getLogoutUrl()),
+                    ->url(fn () => route('hub.account.logout')),
             ])
             ->navigationGroups([
                 'Operations',
