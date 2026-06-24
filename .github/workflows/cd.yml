@@ -1,0 +1,134 @@
+name: CD
+
+# Continuous delivery: on every push to main (and on manual dispatch) run the
+# test suite, build a production release artifact, and — when a deploy target is
+# configured — ship it. Pairs with ci.yml (lint + test on PRs).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3, bcmath, intl
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run test suite
+        run: php artisan test
+
+  build:
+    name: Build release artifact
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3, bcmath, intl
+          coverage: none
+          tools: composer:v2
+
+      - name: Install PHP dependencies (production)
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build frontend assets
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+
+      - name: Package release
+        run: |
+          tar -czf release.tar.gz \
+            --exclude='./.git' \
+            --exclude='./node_modules' \
+            --exclude='./tests' \
+            --exclude='./.github' \
+            --exclude='./release.tar.gz' \
+            --exclude='./.env' \
+            .
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zippi-hub-ops-release
+          path: release.tar.gz
+          retention-days: 7
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    # Deploy only when a target is configured: set repository/environment
+    # variable DEPLOY_ENABLED=true plus the secrets below. Otherwise this job is
+    # skipped and the pipeline stays green (build artifact is still produced).
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
+    steps:
+      - name: Download release artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: zippi-hub-ops-release
+
+      - name: Deploy over SSH (rsync + artisan)
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          scp -i ~/.ssh/id_deploy release.tar.gz "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/release.tar.gz"
+          # DEPLOY_PATH expands locally (unquoted heredoc) so the remote shell
+          # receives the concrete path.
+          ssh -i ~/.ssh/id_deploy "$DEPLOY_USER@$DEPLOY_HOST" bash -s <<REMOTE
+            set -e
+            cd "$DEPLOY_PATH"
+            tar -xzf release.tar.gz && rm -f release.tar.gz
+            php artisan migrate --force
+            php artisan storage:link || true
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+          REMOTE

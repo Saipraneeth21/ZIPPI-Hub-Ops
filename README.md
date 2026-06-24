@@ -30,8 +30,64 @@ Admin dashboard: `http://127.0.0.1:8000/admin` — log in with `admin@zippi.in` 
 
 ### Run the tests
 ```bash
-php artisan test            # uses sqlite :memory: (configured in phpunit.xml)
+php artisan test                     # full suite (sqlite :memory:, see phpunit.xml)
+php artisan test tests/Feature/Hub   # Hub Operations suite only
 ```
+
+## Hub Operations App (`/hub`)
+
+An **additive** operational layer for on-site **hub staff**, built on top of the
+existing platform — it does **not** change any rider, admin, pricing, payment,
+refund or KYC behaviour. It ships as both a **REST API** (for a future hub-ops
+mobile app) and a dedicated **Filament panel**.
+
+### Access
+- **Web panel:** `http://127.0.0.1:8000/hub` — sign in with **employee code + password**.
+- **API base:** `http://127.0.0.1:8000/api/hub/v1` (Sanctum bearer token).
+- Hub staff are managed in the admin dashboard under **Account → Hub Staff Login**
+  (a hub is required and auto-applied when only one exists).
+
+### Demo login
+After `migrate:fresh --seed`, a demo staff account is created:
+
+| Employee code | Password   | Hub             |
+|---------------|------------|-----------------|
+| `HUB001`      | `password` | Hitech City Hub |
+
+### What hub staff can do (all scoped to their own hub)
+- **Dashboard** — KPI cards (Available Bikes, Active Rentals, Expected Returns
+  Today, Bikes Under Maintenance, Maintenance Due) + Upcoming Pickups & Due Returns.
+- **Pickup handover** — inspect the bike, capture battery %, checklist and photos,
+  then hand over (reuses `BookingService::unlock`, `confirmed → active`).
+- **Bike return** — capture odometer, battery, photos and damage notes, then
+  complete the return (reuses `BookingService::returnBike` — late penalty and
+  deposit refund unchanged).
+- **Handovers log** — every handover with its live status (On rent / Returned).
+- **Fleet** — read-only bike list with status filters (incl. *Maintenance due*).
+- **Maintenance Due** — service worklist (status = maintenance, or next service
+  within 14 days), mirroring the admin worklist.
+- **Maintenance & Incident reporting** — reuse the existing entities.
+- **Profile** — edit own name; employee code / role / hub are read-only.
+
+### Hub API endpoints (under `/api/hub/v1`, Sanctum + `hub.staff` guard)
+```
+POST auth/login            # employee_code + password -> token
+GET  auth/me   POST auth/logout
+GET  dashboard
+GET  bookings/search?q=    GET pickups   GET rentals/active   GET bookings/{id}
+POST bookings/{id}/handover    POST bookings/{id}/return
+GET  fleet?status=available|reserved|active|maintenance|maintenance_due
+GET  fleet/{bike}
+POST maintenance           POST incidents
+```
+
+### Architecture notes
+- New `hub` auth guard + `hub_staff` provider; `HubStaff` is an auth identity
+  (`HasApiTokens` + `FilamentUser`).
+- Lifecycle/money logic is reused via a thin `HubOpsService` → `BookingService`
+  (no duplicated business logic).
+- New additive tables `hub_handovers` / `hub_returns`; additive nullable columns
+  on maintenance/incident tables. Nothing existing was renamed or dropped.
 
 ### Switch to MariaDB (production)
 Set in `.env`:
